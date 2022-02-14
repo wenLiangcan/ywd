@@ -55,6 +55,7 @@ pub struct Game {
     letter_states: Rc<RefCell<HashMap<char, Option<LetterHint>>>>,
     message: String,
     shake: bool,
+    _keyboard_listener: Option<EventListener>,
 }
 
 impl Component for Game {
@@ -75,6 +76,7 @@ impl Component for Game {
             letter_states: Rc::new(RefCell::new(state_map)),
             message: "".to_string(),
             shake: false,
+            _keyboard_listener: None,
         }
     }
 
@@ -191,10 +193,11 @@ impl Component for Game {
                     _ => None
                 }
             });
-            EventListener::new(&window(), "keyup", move |e| {
+            let event_listener = EventListener::new(&window(), "keyup", move |e| {
                 let e = e.clone();
                 onkeyup.emit(e.dyn_into::<KeyboardEvent>().expect(""))
-            }).forget();
+            });
+            self._keyboard_listener = Some(event_listener);
         }
     }
 }

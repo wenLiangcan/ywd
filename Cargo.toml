@@ -1,0 +1,14 @@
+[package]
+name = "ywd"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+yew = "0.19.3"
+web-sys = "0.3.55"
+wasm-bindgen = "0.2"
+stylist = { version = "0.10", features = ["yew_integration"] }
+chrono = { version = "0.4", features = ["wasmbind"] }
+gloo = "0.5.0"

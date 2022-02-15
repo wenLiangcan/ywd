@@ -113,16 +113,22 @@ impl Component for Game {
 
                             hints.iter().for_each(|(c, s)| {
                                 self.letter_states.borrow_mut().entry(*c).and_modify(|state| {
-                                    *state = match s {
-                                        LetterHint::Correct => Some(s.clone()),
+                                    match s {
+                                        LetterHint::Correct => {
+                                            state.replace(s.clone());
+                                        },
                                         LetterHint::Present => match state {
-                                            Some(LetterHint::Correct) => None,
-                                            _ => Some(s.clone()),
+                                            Some(LetterHint::Correct) => (),
+                                            _ => {
+                                                state.replace(s.clone());
+                                            },
                                         },
                                         LetterHint::Absent => match state {
-                                            None => Some(s.clone()),
-                                            _ => None,
-                                        }
+                                            None => {
+                                                state.replace(s.clone());
+                                            },
+                                            _ => (),
+                                        },
                                     };
                                 });
                             });

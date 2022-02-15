@@ -1,4 +1,5 @@
 #![feature(array_zip)]
+#![feature(if_let_guard)]
 
 mod keyboard;
 mod wordle;

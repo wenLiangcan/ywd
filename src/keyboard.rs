@@ -160,6 +160,9 @@ impl YieldStyle for Keyboard {
                -webkit-tap-highlight-color: rgba(0, 0, 0, 0.3);
                transition: all 0.2s 1.5s;
            }
+           button:last-of-type {
+               margin: 0;
+           }
            button.big {
                flex: 1.5;
            }

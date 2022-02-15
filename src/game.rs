@@ -39,12 +39,18 @@ pub enum Msg {
     ClearMessage,
     Shake,
     StopShaking,
+    Win,
+}
+
+enum GameResult {
+    Unknown,
+    Failed,
+    Wined,
 }
 
 enum GameState {
     InProgress,
-    Failed,
-    Wined,
+    Over(GameResult),
 }
 
 pub struct Game {
@@ -82,11 +88,8 @@ impl Component for Game {
 
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         let link = ctx.link();
-        match self.state {
-            GameState::InProgress => (),
-            _ => return false,
-        }
         match msg {
+            Self::Message::Press(_) if let GameState::Over(_) = self.state => false,
             Self::Message::Press(key) => match key {
                 _ if self.guesses.len() == 6 => {
                     false
@@ -137,10 +140,12 @@ impl Component for Game {
                                 .map(|(c, h)| {(c, LetterState::Hint(h))}));
 
                             if hints.iter().all(|(_, h)| {*h == LetterHint::Correct}) {
-                                self.state = GameState::Wined;
-                                self.message = "win !!!".to_string();  // todo
+                                self.state = GameState::Over(GameResult::Unknown);
+                                let link = link.clone();
+                                Timeout::new(2000, move || {link.send_message(Self::Message::Win)})
+                                    .forget();
                             } else if self.guesses.len() == 6 {
-                                self.state = GameState::Failed;
+                                self.state = GameState::Over(GameResult::Failed);
                                 self.message = self.wordle.get_answer().to_string();
                             }
 
@@ -176,7 +181,12 @@ impl Component for Game {
                 Timeout::new(1000, move || {link.send_message(Self::Message::StopShaking)})
                     .forget();
                 true
-            }
+            },
+            Self::Message::Win => {
+                self.state = GameState::Over(GameResult::Wined);
+                self.message = "win !!!".to_string();  // todo
+                true
+            },
         }
     }
 
@@ -253,9 +263,12 @@ impl Game {
                     let shake_row_class = if self.shake && row_num == self.guesses.len() {
                         Some("shake")
                     } else { None };
+                    let jump_class = if let (GameState::Over(GameResult::Wined), true) = (&self.state, row_num + 1 == self.guesses.len()) {
+                        Some("jump")
+                    } else { None };
                     html! {
-                        <div class={classes!("row", shake_row_class)}>{
-                            c2s.iter().map(|(c, s)| {
+                        <div class={classes!("row", shake_row_class, jump_class)}>{
+                            c2s.iter().enumerate().map(|(index, (c, s))| {
                                 let state_class = format!("{}", s);
                                 let filled_class = if *c == ' '{ None } else { Some("filled") };
                                 let revealed_class = if let LetterState::Initial = s {
@@ -263,8 +276,12 @@ impl Game {
                                 } else { Some("revealed") };
                                 html! {
                                     <div class={classes!("tile", filled_class, revealed_class)}>
-                                        <div class="front">{c}</div>
-                                        <div class={classes!("back", state_class)}>{c}</div>
+                                        <div class="front" style={format!("transition-delay: {}ms", index * 300)}>{c}</div>
+                                        <div
+                                            class={classes!("back", state_class)}
+                                            style={format!("transition-delay: {}ms; animation-delay: {}ms", index * 300, index * 100)}>
+                                            {c}
+                                        </div>
                                     </div>
                                 }
                             }).collect::<Html>()
@@ -396,6 +413,28 @@ impl YieldStyle for Game {
                 }
                 100% {
                     transform: translate(1px);
+                }
+            }
+
+            .jump .tile .back {
+                    animation: jump 0.5s;
+            }
+
+            @keyframes jump {
+                0% {
+                    transform: translateY(0px);
+                }
+                20% {
+                    transform: translateY(5px);
+                }
+                60% {
+                    transform: translateY(-25px);
+                }
+                90% {
+                    transform: translateY(3px);
+                }
+                100% {
+                    transform: translateY(0px);
                 }
             }
 

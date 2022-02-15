@@ -55,8 +55,9 @@ fn on_window_resize() {
 }
 
 fn main() {
+    style();
+    on_window_resize();
     EventListener::new(&window(), "resize", |_| {on_window_resize()})
         .forget();
-    style();
     yew::start_app::<App>();
 }

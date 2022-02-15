@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 yew = "0.19.3"
-web-sys = "0.3.55"
+web-sys = { version = "0.3.55", features = ["HtmlElement", "CssStyleDeclaration"] }
 wasm-bindgen = "0.2"
 stylist = { version = "0.10", features = ["yew_integration"] }
 chrono = { version = "0.4", features = ["wasmbind"] }

@@ -4,6 +4,8 @@ mod keyboard;
 mod wordle;
 mod game;
 
+use gloo::events::EventListener;
+use gloo::utils::{document, window};
 use stylist::{global_style, GlobalStyle};
 use yew::prelude::*;
 
@@ -41,7 +43,17 @@ fn style() -> GlobalStyle {
     "#).expect("")
 }
 
+fn on_window_resize() {
+    if let Some(body) = document().body() {
+        if let Ok(inner_height) = window().inner_height() {
+            body.style().set_property("--vh", format!("{}px", inner_height.as_f64().expect("")).as_str());
+        }
+    }
+}
+
 fn main() {
+    EventListener::new(&window(), "resize", |_| {on_window_resize()})
+        .forget();
     style();
     yew::start_app::<App>();
 }

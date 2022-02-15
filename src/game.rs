@@ -113,12 +113,17 @@ impl Component for Game {
 
                             hints.iter().for_each(|(c, s)| {
                                 self.letter_states.borrow_mut().entry(*c).and_modify(|state| {
-                                    match state {
-                                        None => {
-                                            state.replace(s.clone());
+                                    *state = match s {
+                                        LetterHint::Correct => Some(s.clone()),
+                                        LetterHint::Present => match state {
+                                            Some(LetterHint::Correct) => None,
+                                            _ => Some(s.clone()),
                                         },
-                                        _ => (),
-                                    }
+                                        LetterHint::Absent => match state {
+                                            None => Some(s.clone()),
+                                            _ => None,
+                                        }
+                                    };
                                 });
                             });
 
@@ -195,7 +200,7 @@ impl Component for Game {
             });
             let event_listener = EventListener::new(&window(), "keyup", move |e| {
                 let e = e.clone();
-                onkeyup.emit(e.dyn_into::<KeyboardEvent>().expect(""))
+                onkeyup.emit(e.dyn_into::<KeyboardEvent>().unwrap())
             });
             self._keyboard_listener = Some(event_listener);
         }

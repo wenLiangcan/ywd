@@ -46,7 +46,8 @@ fn style() -> GlobalStyle {
 fn on_window_resize() {
     if let Some(body) = document().body() {
         if let Ok(inner_height) = window().inner_height() {
-            body.style().set_property("--vh", format!("{}px", inner_height.as_f64().expect("")).as_str());
+            body.style().set_property("--vh",
+                                      format!("{}px", inner_height.as_f64().unwrap()).as_str());
         }
     }
 }
